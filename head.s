@@ -1,6 +1,6 @@
 
 SYS_ADDR		equ 	0x100000	
-
+global 	_gdt, _idt
 ;===============================================================================
 SECTION 	head	vstart=SYS_ADDR
 
@@ -177,9 +177,9 @@ pgdt 	dw 	256*8 - 1
 
 _idt	times 256 dq 0
 
-_gdt	dp 	0x0000000000000000
-		dq	0x00cf98000000ffff
-		dq 	0x00cf92000000ffff
-		dp 	0x0000000000000000
+_gdt	dq 	0x0000000000000000
+	dq	0x00cf98000000ffff
+	dq 	0x00cf92000000ffff
+	dq 	0x0000000000000000
 
 		times 	252 	dq 	0
