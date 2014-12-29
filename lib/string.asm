@@ -2,7 +2,7 @@
 
 ;  rdi,	rsi, rdx, rcx
 section	.text
-;--------------------------------------------------
+;-----------------------------------------------------------------------------------------------
 global 	strcpy
 
 strcpy:
@@ -28,7 +28,7 @@ strcpy:
 	leave
 	ret
 
-;--------------------------------------------------
+;-----------------------------------------------------------------------------------------------
 global 	strncpy
 
 strncpy:
@@ -62,7 +62,7 @@ strncpy:
 	leave
 	ret
 
-;--------------------------------------------------
+;-----------------------------------------------------------------------------------------------
 global strcat
 
 strcat:
@@ -96,7 +96,7 @@ strcat:
 	leave
 	ret
 
-;--------------------------------------------------
+;-----------------------------------------------------------------------------------------------
 
 global strncat
 
@@ -136,7 +136,7 @@ strncat:
 	leave
 	ret
 
-; ;--------------------------------------------------
+; ;-----------------------------------------------------------------------------------------------
 global 	strcmp
 
 strcmp:
@@ -166,7 +166,7 @@ strcmp:
 	leave
 	ret
 
-;--------------------------------------------------
+;-----------------------------------------------------------------------------------------------
 global 	strncmp
 
 strncmp:
@@ -201,7 +201,7 @@ strncmp:
 	leave
 	ret
 
-;--------------------------------------------------
+;-----------------------------------------------------------------------------------------------
 global 	strchr 
 
 strchr:
@@ -236,7 +236,7 @@ strchr:
 
 
 
-;--------------------------------------------------
+;-----------------------------------------------------------------------------------------------
 global 	strrchr 
 
 strrchr:
@@ -268,7 +268,7 @@ strrchr:
 	leave
 	ret
 
-;--------------------------------------------------
+;-----------------------------------------------------------------------------------------------
 global 	strcspn
 
 strcspn:
@@ -276,42 +276,231 @@ strcspn:
 	cld
 
 	push 	rbp
-	mov 	rbp, 	rsp
+	mov 	rbp, 		rsp
 
-	sub 	rsp,	4 * 8	
+	sub 	rsp,			4 * 8	
 
-	xchg 	rdi, 	rsi 	; rsi(1st arg), rdi(2nd arg)
-	mov 	[rsp], 	rsi 
+	xchg 	rdi, 			rsi 					; rsi(1st arg), rdi(2nd arg)
+	mov 	[rsp], 		rsi 
 	mov 	[rsp + 8], 	rdi 
 
-	mov 	al, 	0
-	mov 	rcx, 	0xffffffffffffffff
+	mov 	al, 			0
+	mov 	rcx, 		0xffffffffffffffff
 	repne 	
 	scasb
 	dec 	rdi 
-	mov 	rdx, 	rdi
-	sub 	rdx, 	[rsp + 8]
+	mov 	rdx, 		rdi
+	sub 	rdx, 		[rsp + 8]
 	mov 	[rsp + 16], 	rdx 	; the length of 2nd arg
 
 .1:
-	mov 	rdi, 	[rsp + 8]
+	mov 	rdi, 			[rsp + 8]
 	lodsb
 
-	test 	al, 	al
+	test 	al, 			al
 	je 		.2
 
-	mov 	rcx, 	[rsp + 16]
+	mov 	rcx, 		[rsp + 16]
 	repne 
 	scasb 
 	jne 	.1
 
 .2:
 	dec 	rsi
-	mov 	rdx, 	rsi
-	sub 	rdx, 	[rsp]
-	mov 	rax, 	rdx
+	mov 	rdx, 		rsi
+	sub 	rdx, 		[rsp]
+	mov 	rax, 		rdx
 
 	; mov 	rax, 	[rsp + 16]
 	
+	leave
+	ret
+
+;-----------------------------------------------------------------------------------------------
+
+global 	strpbrk
+
+strpbrk:
+
+	cld
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+	sub 	rsp,		4 * 8		
+	xchg 	rdi, 			rsi 					; rsi(1st arg), rdi(2nd arg)
+
+	mov 	[rsp], 		rdi
+
+	xor 	al, 			al
+
+	mov 	rcx, 		0xffffffffffffffff
+
+	repne
+	scasb
+
+	not 	rcx
+	dec 	rcx 								;get the length of 2nd arg
+	mov 	rdx, 		rcx
+
+
+.1:
+	lodsb
+	test		al, 			al
+	je 		.2
+
+	mov 	rdi, 			[rsp]
+	mov 	rcx, 		rdx
+
+	repne
+	scasb
+	jne 		.1
+
+	dec 	rsi
+	mov 	rax, 		rsi
+	jmp		.3
+
+.2:	xor 		rax, 		rax					; return NULL
+
+.3:
+	leave
+	ret
+
+
+;-----------------------------------------------------------------------------------------------
+
+global 	strstr:
+
+strstr:
+
+	cld
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+	push 	rbx 							; strore the value of rbx
+
+	sub 	rsp,		4 * 8	
+
+	xchg 	rdi, 			rsi 					; rsi(1st arg), rdi(2nd arg)
+	mov 	[rsp], 		rdi
+
+	xor 	al, 			al
+
+	mov 	rcx, 		0xffffffffffffffff
+
+	repne
+	scasb
+
+	not 	rcx
+	dec 	rcx 								;get the length of 2nd arg
+	mov 	rdx, 		rcx
+
+.1:
+	mov 	rbx, 		rsi
+	mov 	rdi,			[rsp]
+	mov 	rcx, 		rdx
+
+	repe 
+	cmpsb
+	je 		.2
+
+	xchg	rbx, 		rsi
+	inc 		rsi 
+
+	mov 	al, 			[rbx - 1]
+	test 	al, 			al
+	jne 		.1
+	xor 	rax, 		rax
+	jmp 	.3
+
+.2:
+	mov 	rax, 		rbx
+.3:
+	pop 	rbx
+	leave
+	ret
+
+;-----------------------------------------------------------------------------------------------
+
+global 	strlen
+
+strlen:
+
+	cld
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+
+	xor 	al, 			al
+
+	mov 	rcx, 		0xffffffffffffffff
+
+	repne
+	scasb
+
+	not 	rcx
+	dec 	rcx 
+
+	mov 	rax, 		rcx
+
+	leave
+	ret
+
+;-----------------------------------------------------------------------------------------------
+global 	memcpy
+
+memcpy:
+
+	cld
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+	mov 	rcx, 		rdx
+	mov 	rax, 		rdi
+
+	rep
+	movsb 	
+
+	leave
+	ret
+
+;-----------------------------------------------------------------------------------------------
+global 	memmove
+
+memmove:
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+	push 	rdi
+	mov 	rcx, 		rdx
+
+	cmp 	rsi, 			rdi						; compare rsi,  rdi
+	jl 		.1 									; if rsi < rdi  jump  to table 1
+
+	cld
+
+	rep
+	movsb
+
+	jmp 	.2
+.1:
+
+	std
+
+	sub 	rdx, 	1
+	add 	rdi, 		rdx
+	add 	rsi, 		rdx
+
+
+	rep
+	movsb 	
+
+.2:
+	pop 	rax
+
 	leave
 	ret
