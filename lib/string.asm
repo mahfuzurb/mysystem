@@ -382,10 +382,10 @@ strstr:
 
 	sub 	rsp,		4 * 8	
 
-	xchg 	rdi, 			rsi 					; rsi(1st arg), rdi(2nd arg)
+	xchg 	rdi, 		rsi 					; rsi(1st arg), rdi(2nd arg)
 	mov 	[rsp], 		rdi
 
-	xor 	al, 			al
+	xor 	al, 		al
 
 	mov 	rcx, 		0xffffffffffffffff
 
@@ -449,6 +449,75 @@ strlen:
 	ret
 
 ;-----------------------------------------------------------------------------------------------
+global 	strtok, ___strtok
+
+strtok:
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+	sub 	rsp, 		4 * 8
+
+	cld
+
+	mov 	[rsp], 		rdi
+	mov 	[rsp + 8], 	rsi
+
+	test 	rdi, 		rdi 
+	je 		.3
+	;rdi != NULL
+	mov 	[___strtok],rdi
+
+	;compute the length of delimeter
+	mov 	rcx, 		-1
+	mov 	rdi, 		[rsp + 8]
+	xor 	al, 		al
+	repne
+	scasb
+	not 	rcx
+	dec 	rcx
+
+	; the length of delimeter == 0  ? 
+	test 	rcx, 		rcx
+	je 		.end
+
+	; the length of delimeter  --->  rdx
+	mov 	rdx, 		rcx  			 
+
+.1:
+	; search the delimeter in the source string
+	mov 	rdi, 		[rsp]
+	mov 	rsi, 		[rsp + 8]
+
+	call	strstr
+
+	test 	rax, 		rax		; return value == NULL ?
+	je 		.2
+
+	;subscribe the delimeter in the source string to \0
+	xor 	al, 		al
+	mov 	rdi, 		rax
+	mov 	rcx, 		rdx
+	stosb
+	jmp 	.1
+.2:
+	
+	jmp 	.end
+
+.3:;source string == NULL
+	xor 	al, 		al
+
+
+.end
+
+	mov 	rax, 		___strtok
+
+
+	leave
+	ret
+
+___strtok	dq			0	
+;-----------------------------------------------------------------------------------------------
 global 	memcpy
 
 memcpy:
@@ -475,10 +544,12 @@ memmove:
 	push 	rbp
 	mov 	rbp, 		rsp
 
-	push 	rdi
+	sub 	rsp, 		4*8
+
+	mov 	[rsp],  	rdi
 	mov 	rcx, 		rdx
 
-	cmp 	rsi, 			rdi						; compare rsi,  rdi
+	cmp 	rsi, 		rdi						; compare rsi,  rdi
 	jl 		.1 									; if rsi < rdi  jump  to table 1
 
 	cld
@@ -491,16 +562,94 @@ memmove:
 
 	std
 
-	sub 	rdx, 	1
+
+	sub 	rdx, 		1
 	add 	rdi, 		rdx
 	add 	rsi, 		rdx
 
-
-	rep
-	movsb 	
+.3:
+	lodsb
+	stosb
+	loop 	.3
 
 .2:
-	pop 	rax
+	mov 	rax, 		[rsp]
+
+	cld						;why should this instructor must be used here?
+
+	leave
+	ret
+
+;-----------------------------------------------------------------------------------------------
+global 	memcmp
+
+memcmp:
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+	cld
+
+	mov 	rcx, 		rdx
+	xor 	rax,  		rax
+
+	repe
+	cmpsb
+	je 		.1
+	mov 	rax, 		1
+	jl		.1
+	neg 	rax
+
+.1:
+	leave
+	ret
+
+;-----------------------------------------------------------------------------------------------
+global 	memchr
+
+memchr:
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+	cld
+
+	mov 	rax, 		rsi 	; 2nd -->> al
+	mov 	rcx, 		rdx
+
+	repne
+	scasb
+
+	je  	.1
+	mov 	rdi, 		1 		; return rdi - 1 = NULL
+
+.1:
+	dec 	rdi
+
+	mov 	rax, 		rdi
+
+	leave
+	ret
+
+;-----------------------------------------------------------------------------------------------
+global 	memset
+
+memset:
+
+	push 	rbp
+	mov 	rbp, 		rsp
+
+	cld
+
+	mov 	rcx,		rdx
+	mov 	rax, 		rsi 
+
+	mov 	rdx, 		rdi
+
+	rep
+	stosb
+
+	mov 	rax, 		rdx
 
 	leave
 	ret
