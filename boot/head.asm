@@ -1,31 +1,39 @@
 
 SYS_ADDR		equ 	0x100000	
-global 	_gdt, _idt
+global 	gdt, idt, _start
+extern 	stack_start, main
 ;===============================================================================
-SECTION 	head	vstart=SYS_ADDR
+SECTION .text
 
 	[bits 32]
+pg_dir:
 
-start:
+_start:
 
-    ;from now on, we are in the protected mode.
+	;from now on, we are in the protected mode.
 	;the first thing we should do is to reload all registers
 
 	mov 	ax, 0x0010                    ;数据段选择子
-    mov 	ds, ax
-    mov 	es, ax
-    mov 	fs, ax
-    mov 	gs, ax
-    mov 	ss, ax                         ;加载堆栈段(4GB)选择子
-    mov 	esp,0x7000                     ;堆栈指针
+	mov 	ds, ax
+	mov 	es, ax
+	mov 	fs, ax
+	mov 	gs, ax
+	lss 	esp, 	[stack_start]
 
 
-    call 	setup_gdt
-    call 	setup_idt
+	call 	setup_gdt
+	call 	setup_idt
 
-   
+	;重新加载段寄存器，刷新它们的隐藏部分
 
-    sti 
+	mov 	ax, 0x0010                    ;数据段选择子
+	mov 	ds, ax
+	mov 	es, ax
+	mov 	fs, ax
+	mov 	gs, ax
+	lss 	esp, 	[stack_start]
+
+	sti 
 
     ;测试A20总线是否开启
 	xor 	eax, eax 
@@ -34,65 +42,9 @@ test_a20:
 	mov 	[0x100000], eax 
 	cmp 	[0x000000], eax 
 	je 		test_a20
-		
-
-	;内核main函数参数入栈
-	push 	0
-	push 	0
-	push 	0
-	push 	L6
-	push	_main
-
-	jmp 	setup_paging
-
-L6: jmp 	L6
-
-
-_pg_dir:
-
-	times		0x1000 - ($-$$)	db	0 			;一个页目录 占用4K内存,1024个页表占用4M内存
-
-pg:
-	times		0x400000	db		0
-
-
-setup_paging:
-
-	mov 	eax, pg + 7						;7为页表的后几位，即代表页表的权限
-	mov 	edi, _pg_dir
-	mov 	ecx, 1024 						;一共1024个页表
-
-.set_pg_dir:
-
-	mov 	[edi], eax
-	add 	edi, 4
-	add 	eax, 0x1000
 	
-	loop 	.set_pg_dir
 
-
-	mov 	edi, pg 
-	mov 	eax, 0x0000 + 7
-	mov 	ecx, 1024 * 1024 				;整个4G内存一共1024*1024个页框
-
-.set_pg_table:
-
-	mov 	[edi], eax
-	add 	edi, 4
-	add 	eax, 0x1000
-
-	loop 	.set_pg_table
-	
-;打开分页
-	xor 	eax, eax
-	mov 	eax, cr3
-	or 		eax, 0x80000000			
-	mov 	cr3, eax
-
-
-	ret 									;跳转到内核的main函数中去执行
-
-
+	jmp 	after_page_tables
 
 ;-------------------------------------------------------------------------------
 setup_gdt:
@@ -113,7 +65,7 @@ setup_idt:
 	;put the dummy int_descriptor into idt 
 	mov 	ecx, 256
 
-	mov 	edi, _idt
+	mov 	edi, idt
 
 .install_idt:
 	
@@ -121,7 +73,7 @@ setup_idt:
 	mov 	[edi+4], edx 
 
 	add 	edi, 8
-	dec 	ecs 
+	dec 	ecx
 
 	jne		.install_idt
 
@@ -131,17 +83,6 @@ setup_idt:
 	ret 
 
 
-;-------------------------------------------------------------------------------
-ignore_int:
-
-	push 	ebx 
-
-	mov 	ebx, int_msg
-	call 	put_string
-
-	pop 	ebx 
-
-	iret 
 
 ;-------------------------------------------------------------------------------
 make_gate_descriptor:                       ;构造门的描述符（调用门等）
@@ -164,22 +105,137 @@ make_gate_descriptor:                       ;构造门的描述符（调用门�
          pop ecx
          pop ebx
       
-         retf         
+         ret        
+
+;-------------------------------------------------------------------------------------
+times		0x1000 - ($-$$)	db	0 			;page table 0
+pg0:
+
+times		0x1000 	db	0 			;page table 1
+pg1:
+
+times		0x1000 	db	0 			;page table 2
+pg2:
+
+times		0x1000 	db	0 			;page table 3
+pg3:
+
+times		0x1000 	db	0 			;page table 4
 
 ;-------------------------------------------------------------------------------
+ignore_int:
+
+	
+	push 	eax 
+	push 	ecx 
+	push 	edx 
+	push 	ds 
+	push 	es 
+	push 	fs 
+
+	mov 	eax, 	0x0010
+	mov 	ds, 	eax 
+	mov 	es, 	eax 
+	mov 	fs, 	eax 
+	
+	push 	int_msg	
+
+;	call 	printf  
+
+	pop 	eax 
+
+	push 	fs 
+	push 	es 
+	push 	ds 
+	push 	edx 
+	push 	ecx 
+	push 	eax 
+
+
+	iret 
+
+
+after_page_tables:
+	;内核main函数参数入栈
+	push 	0
+	push 	0
+	push 	0
+	push 	L6
+	push	main
+
+	jmp 	setup_paging
+
+L6: jmp 	L6
+
+
+setup_paging:
+
+	;5页内存清零
+
+	mov 	ecx, 	1024 * 5
+	xor 	eax, 	eax 
+	mov 	edi, 	pg_dir
+
+	cld
+
+	rep
+	stosb
+
+	;设置页目录，此时一个5个页表
+	mov dword	[pg_dir], 		pg0 + 7;
+	mov dword	[pg_dir+4], 	pg1 + 7;
+	mov dword	[pg_dir+8], 	pg2 + 7;
+	mov dword	[pg_dir+12], 	pg3 + 7;
+
+	mov 	edi, 	pg3 + 4092
+	mov 	eax, 	0xfff007  				;16MB - 4096 + 7
+
+	std
+.1:
+	stosd
+	sub 	eax, 	0x1000
+	jge 	.1
+
+	
+	;打开分页
+	mov 	eax, 	pg_dir
+	mov 	cr3, 	eax
+
+	mov 	eax, cr0 	
+	or 		eax, 0x80000000			
+	mov 	cr0, eax
+
+
+	ret 									;跳转到内核的main函数中去执行
+
+
+
+
+;-------------------------------------------------------------------------------
+
+;页目录从此处开始
+; pg_dir: dd  0x0
+; pg0 	dd 	0x1000
+; pg1 	dd 	0x2000
+; pg2 	dd 	0x3000
+; pg3 	dd 	0x4000
+
+
 pidt	dw 	256*8 - 1
-		dd 	_idt 
+		dd 	idt 
 
 pgdt 	dw 	256*8 - 1
-		dd 	_gdt 
+		dd 	gdt 
 
 
 
-_idt	times 256 dq 0
+idt	times 256 dq 0
 
-_gdt	dq 	0x0000000000000000
-	dq	0x00cf98000000ffff
-	dq 	0x00cf92000000ffff
-	dq 	0x0000000000000000
+gdt	dq 	0x0000000000000000
+		dq	0x00cf98000000ffff
+		dq 	0x00cf92000000ffff
+		dq 	0x0000000000000000
 
 		times 	252 	dq 	0
+
+int_msg db 	"Unknown interrupt\n"

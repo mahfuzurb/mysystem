@@ -1,14 +1,14 @@
 SETUP_ADDR      	equ   	0x7e00            	;初始化程序加载处的地址
 CONFARG_ADDR		equ		0x9000	          	;the configure argument of the machine
 SYS_ADDR			equ 	0x100000		  
-SYS_SIZE_SECTOR		equ 	1 			   		;内核所占扇区数
-SYS_POSITION		equ		5 					;内核位于硬盘的第10个逻辑扇区处
+SYS_SIZE_SECTOR		equ 	80 			   		;内核所占扇区数
+SYS_POSITION		equ		5 					;内核位于硬盘的第6个逻辑扇区处
 ;===============================================================================
 SECTION  setup  vstart=SETUP_ADDR
 
 	length      dd end       ;程序总长度#00
 
-    entry       dd start     ;入口点#04
+	entry       dd start     ;入口点#04
 
 
 ;-------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ start:
 
 
 
-    cli                                ;中断机制尚未工作
+    	cli                                ;中断机制尚未工作
 
     ;设置8259A中断控制器
 	mov 	al,0x11
@@ -62,7 +62,7 @@ start:
 	mov 	eax, cr0
 	and 	eax, 0x80000011  ;only need PG, PE, ET bit
 
-	or 		eax, 2 			 ;set MP bit
+	or 	eax, 2 			 ;set MP bit
 	mov 	cr0, eax 
 	call 	check_x87
 
@@ -112,8 +112,11 @@ flush:
 	inc 	eax 
 	loop 	.read_core
 
-	mov 	ebx, debug_msg
-	call 	put_string
+	;mov 	ebx, debug_msg
+	;call 	put_string
+
+    mov     ebx, SYS_ADDR
+    add     ebx, 0x1000
 
 	jmp  	0x0008:SYS_ADDR
 
