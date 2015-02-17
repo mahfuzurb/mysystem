@@ -3,6 +3,7 @@ IMG_HEADER_LEN = 0x1000
 TEXT_OFF = 0x101000
 
 LDFLAGS	=-s -x -M -T tools/system.lds
+CFLAGS = -nostdinc -Iinclude
 CC = gcc
 
 DRIVERS = 
@@ -49,8 +50,9 @@ kernel/chr_drv/chr_drv.a:
 
 
 clean:
+	(cd kernel;make clean)
 	rm a.img System.map tools/system tools/makeimg boot/bootSect boot/setup
 	rm init/*.o boot/*.o 
-	(cd kernel;make clean)
+	
 
 

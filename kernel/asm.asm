@@ -1,3 +1,6 @@
+extern coprocessor_error
+global irq13
+
 %macro interrupt_proc 1
 
 	global 	%1
@@ -71,7 +74,7 @@
 ;------------------------------------------------------------------------------------------------------------------------------
 ;coprocessor   error    irq13
 
-	interrupt_proc	irq13		;int45 	interrupt_proc
+irq13:							;int45 	interrupt_proc
 	push	eax
 	xor		al, 	al
 	out		0xf0, 	al

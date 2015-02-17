@@ -1,5 +1,5 @@
 SETUP_ADDR      	equ   	0x7e00            	;初始化程序加载处的地址
-CONFARG_ADDR		equ		0x9000	          	;the configure argument of the machine
+CONFARG_ADDR		equ		0x90000	          	;the configure argument of the machine
 SYS_ADDR			equ 	0x100000		  
 SYS_SIZE_SECTOR		equ 	80 			   		;内核所占扇区数
 SYS_POSITION		equ		5 					;内核位于硬盘的第6个逻辑扇区处
@@ -24,6 +24,10 @@ start:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;load confarg 
+    ; get the extend memory (KB) , put it in 0x90002
+    mov     ah, 0x88 
+    int     0x15
+    mov     [CONFARG_ADDR + 2], ax 
 
 ; set Video Card 
 
@@ -138,115 +142,6 @@ check_x87:
 	ret 
 
 ;-------------------------------------------------------------------------------
-         ;字符串显示例程（适用于平坦内存模型） 
-put_string:                                 ;显示0终止的字符串并移动光标 
-                                            ;输入：EBX=字符串的线性地址
-
-         push ebx
-         push ecx
-
-         cli                                ;硬件操作期间，关中断
-
-  .getc:
-         mov cl,[ebx]
-         or cl,cl                           ;检测串结束标志（0） 
-         jz .exit                           ;显示完毕，返回 
-         call put_char
-         inc ebx
-         jmp .getc
-
-  .exit:
-
-         sti                                ;硬件操作完毕，开放中断
-
-         pop ecx
-         pop ebx
-
-         ret                               ;段间返回
-
-;-------------------------------------------------------------------------------
-put_char:                                   ;在当前光标处显示一个字符,并推进
-                                            ;光标。仅用于段内调用 
-                                            ;输入：CL=字符ASCII码 
-         pushad
-
-         ;以下取当前光标位置
-         mov dx,0x3d4
-         mov al,0x0e
-         out dx,al
-         inc dx                             ;0x3d5
-         in al,dx                           ;高字
-         mov ah,al
-
-         dec dx                             ;0x3d4
-         mov al,0x0f
-         out dx,al
-         inc dx                             ;0x3d5
-         in al,dx                           ;低字
-         mov bx,ax                          ;BX=代表光标位置的16位数
-         and ebx,0x0000ffff                 ;准备使用32位寻址方式访问显存 
-         
-         cmp cl,0x0d                        ;回车符？
-         jnz .put_0a                         
-         
-         mov ax,bx                          ;以下按回车符处理 
-         mov bl,80
-         div bl
-         mul bl
-         mov bx,ax
-         jmp .set_cursor
-
-  .put_0a:
-         cmp cl,0x0a                        ;换行符？
-         jnz .put_other
-         add bx,80                          ;增加一行 
-         jmp .roll_screen
-
-  .put_other:                               ;正常显示字符
-         shl bx,1
-         mov [0x800b8000+ebx],cl            ;在光标位置处显示字符 
-
-         ;以下将光标位置推进一个字符
-         shr bx,1
-         inc bx
-
-  .roll_screen:
-         cmp bx,2000                        ;光标超出屏幕？滚屏
-         jl .set_cursor
-
-         cld
-         mov esi,0x800b80a0                 ;小心！32位模式下movsb/w/d 
-         mov edi,0x800b8000                 ;使用的是esi/edi/ecx 
-         mov ecx,1920
-         rep movsd
-         mov bx,3840                        ;清除屏幕最底一行
-         mov ecx,80                         ;32位程序应该使用ECX
-  .cls:
-         mov word [0x800b8000+ebx],0x0720
-         add bx,2
-         loop .cls
-
-         mov bx,1920
-
-  .set_cursor:
-         mov dx,0x3d4
-         mov al,0x0e
-         out dx,al
-         inc dx                             ;0x3d5
-         mov al,bh
-         out dx,al
-         dec dx                             ;0x3d4
-         mov al,0x0f
-         out dx,al
-         inc dx                             ;0x3d5
-         mov al,bl
-         out dx,al
-         
-         popad
-         
-         ret                              
-
-;-------------------------------------------------------------------------------
 read_hard_disk_0:                           ;从硬盘读取一个逻辑扇区（平坦模型） 
                                             ;EAX=逻辑扇区号
                                             ;EBX=目标缓冲区线性地址
@@ -303,7 +198,7 @@ read_hard_disk_0:                           ;从硬盘读取一个逻辑扇区�
          pop ecx
          pop eax
       
-         sti
+;         sti
       
          ret                               
 

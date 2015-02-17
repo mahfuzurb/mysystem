@@ -33,7 +33,7 @@ _start:
 	mov 	gs, ax
 	lss 	esp, 	[stack_start]
 
-	sti 
+;	sti 
 
     ;测试A20总线是否开启
 	xor 	eax, eax 
@@ -140,7 +140,7 @@ ignore_int:
 	
 	push 	int_msg	
 
-;	call 	printf  
+;	call 	printk
 
 	pop 	eax 
 
