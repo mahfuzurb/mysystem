@@ -15,7 +15,7 @@ static inline _syscall0(int, pause);
 #include <asm/io.h>
 
 extern long kernel_mktime(struct tm * tm);
-
+extern int printk(const char *fmt, ...);
 
 
 #define  EXT_MEM_K (*(unsigned short *) 0x90002)
@@ -75,6 +75,7 @@ void main(void)
 	// chr_dev_init();
 	// tty_init();
 	time_init();
+	printk("%s\n", "now we are in the main function");
 	// sched_init();
 	// buffer_init(buffer_memory_end);
 	// hd_init();

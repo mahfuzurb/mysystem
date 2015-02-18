@@ -6,8 +6,9 @@ LDFLAGS	=-s -x -M -T tools/system.lds
 CFLAGS = -nostdinc -Iinclude
 CC = gcc
 
-DRIVERS = 
+DRIVERS = kernel/chr_drv/chr_drv.a
 ARCHIVES=kernel/kernel.o
+LIBS	=lib/lib.a
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -25,10 +26,11 @@ tools/makeimg: tools/makeimg.cpp boot/bootSect boot/setup tools/system
 boot/head.o: boot/head.asm
 	nasm -f elf boot/head.asm -o boot/head.o
 
-tools/system: boot/head.o init/main.o $(DRIVERS) $(ARCHIVES)
+tools/system: boot/head.o init/main.o $(DRIVERS) $(ARCHIVES) $(LIBS)
 	ld $(LDFLAGS) boot/head.o init/main.o \
 		$(ARCHIVES) \
 		$(DRIVERS) \
+		$(LIBS) \
 		-o tools/system > System.map
 
 
@@ -47,10 +49,12 @@ kernel/kernel.o:
 kernel/chr_drv/chr_drv.a:
 	cd kernel/chr_drv; make
 
-
+lib/lib.a:
+	(cd lib; make)
 
 clean:
 	(cd kernel;make clean)
+	(cd lib;make clean)
 	rm a.img System.map tools/system tools/makeimg boot/bootSect boot/setup
 	rm init/*.o boot/*.o 
 	

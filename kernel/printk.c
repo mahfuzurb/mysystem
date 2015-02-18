@@ -6,6 +6,7 @@
 static char buf[1024];
 
 extern int vsprintf(char * buf, const char * fmt, va_list args);
+extern void console_print(const char *);
 
 int printk(const char *fmt, ...)
 {

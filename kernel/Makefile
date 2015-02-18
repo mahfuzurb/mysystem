@@ -5,7 +5,7 @@ LD = ld
 
 CFLAGS = -std=gnu99 -nostdinc -I../include  -fno-builtin 
 
-OBJS  = sched.o mktime.o sys.o traps.o sys_call.o asm.o segment.o
+OBJS  = sched.o mktime.o sys.o traps.o sys_call.o asm.o segment.o printk.o vsprintf.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -38,3 +38,5 @@ traps.o: traps.c ../include/string.h ../include/linux/head.h \
 sys_call.o: sys_call.asm 
 
 asm.o: asm.asm
+
+vsprintf.o: ../include/stdarg.h ../include/string.h

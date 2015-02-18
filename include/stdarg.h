@@ -5,7 +5,7 @@ typedef char *va_list;
 
 #define INTSIZEOF(arg) (( (sizeof(arg) + sizeof(int) - 1) ) / sizeof(int) * sizeof(int))
 
-#define va_start(ap,v) ( ap = (char *)&v + _INTSIZEOF(v) )
+#define va_start(ap,v) ( ap = (char *)&v + INTSIZEOF(v) )
 
 #define va_arg(ap, TYPE)						\
  (ap += INTSIZEOF(TYPE),					\

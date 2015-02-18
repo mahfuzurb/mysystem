@@ -13,4 +13,5 @@ chr_drv.a: $(OBJS)
 
 clean:
 	rm *.o
+	rm *.a
 # console.c: 
