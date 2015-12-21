@@ -2,8 +2,10 @@ IMG_HEADER_LEN = 0x1000
 
 TEXT_OFF = 0x101000
 
-LDFLAGS	=-s -x -M -T tools/system.lds
-CFLAGS = -nostdinc -Iinclude
+LDFLAGS	= -m elf_i386 -s -x -M -T tools/system.lds
+# LDFLAGS	= –Ttext 0x0 –e main
+# LDFLAGS = –Ttext 0x0
+CFLAGS = -nostdinc -Iinclude -m32
 CC = gcc
 
 DRIVERS = kernel/chr_drv/chr_drv.a
@@ -16,15 +18,23 @@ LIBS	=lib/lib.a
 
 all: a.img
 
-a.img: boot/bootSect boot/setup tools/system tools/makeimg
-	tools/makeimg $(IMG_HEADER_LEN)
+a.img: boot/bootSect boot/setup tools/systemtest tools/writeimg
+	objcopy -R .note -R .comment -S -O binary tools/systemtest tools/system
+	tools/writeimg
 	sync
 
 tools/makeimg: tools/makeimg.cpp boot/bootSect boot/setup tools/system
 	g++ tools/makeimg.cpp -o tools/makeimg
 
+tools/writeimg: tools/writeimg.c boot/bootSect boot/setup
+	gcc tools/writeimg.c -o tools/writeimg
+
+
 boot/head.o: boot/head.asm
-	nasm -f elf boot/head.asm -o boot/head.o
+	nasm -f elf32 boot/head.asm -o boot/head.o
+
+tools/systemtest: boot/head.o init/testmain.o kernel/sched.o
+	ld  $(LDFLAGS) boot/head.o init/testmain.o kernel/sched.o -o tools/systemtest > System.map
 
 tools/system: boot/head.o init/main.o $(DRIVERS) $(ARCHIVES) $(LIBS)
 	ld $(LDFLAGS) boot/head.o init/main.o \
@@ -41,6 +51,8 @@ boot/bootSect: boot/bootSect.asm
 boot/setup: boot/setup.asm
 	nasm -f bin boot/setup.asm
 
+boot/head: boot/head.asm
+	nasm -f bin boot/head.asm
 
 kernel/kernel.o:
 	cd kernel; make
@@ -53,10 +65,9 @@ lib/lib.a:
 	(cd lib; make)
 
 clean:
+	-rm a.img System.map tools/system tools/writeimg boot/bootSect boot/setup
+	-rm init/*.o boot/*.o 
 	(cd kernel;make clean)
-	(cd lib;make clean)
-	rm a.img System.map tools/system tools/makeimg boot/bootSect boot/setup
-	rm init/*.o boot/*.o 
 	
 
 

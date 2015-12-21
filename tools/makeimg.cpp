@@ -77,7 +77,7 @@ int main(int argc, char const *argv[])
 	count += diff;
 
 
-	count += copyFile(out, "tools/system");
+	// count += copyFile(out, "tools/system");
 
 	out.write(zero, 512 * IMG_SECTOR_NUM - count);
 

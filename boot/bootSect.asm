@@ -1,61 +1,75 @@
 
-SETUP_ADDR        equ   0x7e00            ;初始化程序加载处的地址
+;SETUP_ADDR        equ   0x7e00            ;初始化程序加载处的地址
 SETUP_SECTOR      equ   1                     ;初始化程序起始的逻辑扇区号
-
+BOOTSEG     EQU     0x07c0
+INITSEG         EQU     0x9000
+SETUPSEG    EQU     0x9020
+SYSSEG          EQU     0x1000
+SYS_SIZE_SECTOR		equ 	80 			   		;内核所占扇区数
+SYS_POSITION		equ		5 					;内核位于硬盘的第6个逻辑扇区处
 ;===============================================================================
-SECTION   mbr   vstart=0x00007c00 ;整体只有一个段
+SECTION   mbr ;整体只有一个段
 
 
+    mov     ax,     BOOTSEG
+    mov     ds,     ax
+    mov     ax,     INITSEG
+    mov     es,     ax
+    mov     cx,     512
+    xor       si,       si
+    xor       di,       di
+    rep 
+    movsb          	
+    jmp     INITSEG : go 
+
+go:
     mov   ax, cs
     mov   ds, ax            ;初始化数据段和代码段指向统一地方 即0
     mov   es, ax            ;令es也指向0,即整段内存
 
+	mov 		dx, 	0xfef4   ;	随意值，只要避免被覆盖就行
+	mov 		ss, 	ax
+	mov 		sp, 	dx
 
     ;输出字符串'Loading system......'
-    mov ah, 0x03                        ;读取光标位置
-    xor bh, bh                          ;bh为页号
-    int 0x10
+    mov     ah, 0x03                        ;读取光标位置
+    xor         bh, bh                          ;bh为页号
+    int         0x10
 
-    mov cx, pgdt - msg
-    mov bx, 0x0007
-    mov bp, msg
-    mov ax, 0x1301
-    int 0x10
+    mov     cx, pgdt - msg
+    mov     dx, 0x1004
+    mov     bx, 0x0007
+    mov     bp, msg
+    mov     ax, 0x1301
+    int         0x10
 
 
 
     ;读取setup程序
-    mov eax, SETUP_SECTOR
-    mov ebx, SETUP_ADDR
-    call read_hard_disk_0              ;以下读取程序的起始部分（一个扇区）
+    mov 		ax, 	SETUPSEG
+    mov 		ds, 	ax
+    mov 		eax, 1
+    mov 		ebx, 0x00
+    call 		read_hard_disk_0              ;以下读取程序的起始部分（一个扇区）
 
-    mov eax, [SETUP_ADDR]
-    xor edx,edx
-    mov ecx,512                        ;512字节每扇区
-    div ecx
 
-    or edx,edx
-    jnz @1                             ;未除尽，因此结果比实际扇区数少1
-    dec eax                            ;已经读了一个扇区，扇区总数减1
+	;读取内核
+	mov 	ax, 	SYSSEG
+	mov 	ds, 	ax
+	mov 	eax, 	SYS_POSITION
+	mov 	ebx, 	0x00
 
-@1:
+    	mov 	ecx, 	SYS_SIZE_SECTOR
 
-    or eax,eax                         ;考虑实际长度≤512个字节的情况
-    jz over                             ;EAX=0 ?
+readcore:
+	call 	read_hard_disk_0           
+	inc 	eax
+	loop 	readcore   
 
-    ;读取剩余的扇区
-    mov ecx,eax                        ;32位模式下的LOOP使用ECX
-    mov eax,SETUP_SECTOR
-    inc eax                            ;从下一个逻辑扇区接着读
-@2:
-    call read_hard_disk_0
-    inc eax
-    loop @2                            ;循环读，直到读完整个setup
-
-over:
 
     ;跳转到setup程序start执行
-    jmp [SETUP_ADDR + 4]
+
+    jmp SETUPSEG: 0
 
     ;hlt
 

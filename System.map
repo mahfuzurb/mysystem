@@ -1,4 +1,0 @@
-Archive member included because of file (symbol)
-
-kernel/chr_drv/chr_drv.a(console.o)
-                              kernel/kernel.o (console_print)

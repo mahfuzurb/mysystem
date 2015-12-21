@@ -1,43 +1,64 @@
-SETUP_ADDR      	equ   	0x7e00            	;初始化程序加载处的地址
-CONFARG_ADDR		equ		0x90000	          	;the configure argument of the machine
-SYS_ADDR			equ 	0x100000		  
+SETUP_ADDR      	equ   	0x000            	;初始化程序加载处的地址
+CONFARG_SEG		equ		0x9000	          	;the configure argument of the machine
+SYSSEG			equ 	0x1000		  
 SYS_SIZE_SECTOR		equ 	80 			   		;内核所占扇区数
 SYS_POSITION		equ		5 					;内核位于硬盘的第6个逻辑扇区处
 ;===============================================================================
-SECTION  setup  vstart=SETUP_ADDR
-
-	length      dd end       ;程序总长度#00
-
-	entry       dd start     ;入口点#04
-
-
-;-------------------------------------------------------------------------------
+SECTION  setup
 
 ;程序入口点
 start:
+        
+	mov     ax,     CONFARG_SEG
+	mov     ds,     ax
 
-	mov 	ax, cs 
-	mov 	ds, ax
-	mov 	ss, ax
-
-	mov 	sp, 0x7dff      
+	; mov 	ss, ax
+	; mov 	sp, 0x7dff      
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;load confarg 
     ; get the extend memory (KB) , put it in 0x90002
-    mov     ah, 0x88 
-    int     0x15
-    mov     [CONFARG_ADDR + 2], ax 
+	mov     ah, 0x88 
+	int     0x15
+
+	mov  word   [2], ax 
 
 ; set Video Card 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+	cli                                ;中断机制尚未工作
 
-    	cli                                ;中断机制尚未工作
 
-    ;设置8259A中断控制器
+	mov 	ax, 	0x00
+	cld 
+do_move:
+	mov 	es, 	ax
+	add 	ax, 	0x1000
+	cmp 	ax, 	0x9000
+	jz 	end_move
+	mov 	ds, 	ax
+	xor 	di, 	di
+	xor 	si, 	si 
+	mov 	cx, 	0x8000
+	rep
+	movsw
+
+	jmp 	do_move
+
+end_move:
+
+	mov 	ax, 	cs 
+	mov 	ds, 	ax
+
+
+	lgdt  	[pgdt]
+
+	;cpu要求进入保护模式之前必须设置idt，这里暂时设置一个空表
+	lidt	[pidt]
+
+	;设置8259A中断控制器
 	mov 	al,0x11
 	out 	0x20,al                        ;ICW1：边沿触发/级联方式
 	mov 	al,0x20
@@ -71,58 +92,22 @@ start:
 	call 	check_x87
 
 
-    lgdt  	[pgdt]
 
-    ;cpu要求进入保护模式之前必须设置idt，这里暂时设置一个空表
-    lidt	[pidt]
+	in al,0x92                         ;南桥芯片内的端口
+	or al,0000_0010B
+	out 0x92,al                        ;打开A20
 
+	; mov eax,cr0
+	; or eax,1
+	; mov cr0,eax                        ;设置PE位
 
-    in al,0x92                         ;南桥芯片内的端口
-    or al,0000_0010B
-    out 0x92,al                        ;打开A20
-
-    mov eax,cr0
-    or eax,1
-    mov cr0,eax                        ;设置PE位
-
+	mov 	ax, 	0x0001
+	lmsw 	ax
      
-
 	;以下进入保护模式... ...
 	;清流水线并串行化处理器
-	
-	jmp  dword 0x0008:flush
 
-	[bits 32]
-
-flush:
-
-	mov 	ax, 0x0010                    ;数据段选择子
-    mov 	ds, ax
-    mov 	es, ax
-    mov 	fs, ax
-    mov 	gs, ax
-    mov 	ss, ax                         ;加载堆栈段(4GB)选择子
-    mov 	esp,0x7000                     ;堆栈指针
-
-
-	;load system core
-
-	mov 	eax, SYS_POSITION
-	mov 	ebx, SYS_ADDR
-	mov 	ecx, SYS_SIZE_SECTOR
-
-.read_core:
-	call 	read_hard_disk_0
-	inc 	eax 
-	loop 	.read_core
-
-	;mov 	ebx, debug_msg
-	;call 	put_string
-
-    mov     ebx, SYS_ADDR
-    add     ebx, 0x1000
-
-	jmp  	0x0008:SYS_ADDR
+	jmp  	0x0008:0
 
 
 ;-------------------------------------------------------------------------------
@@ -206,15 +191,15 @@ read_hard_disk_0:                           ;从硬盘读取一个逻辑扇区�
 ;------------------------------------------------------------------------------- 
 debug_msg	db 	"debug here", 0
 
-pgdt        dw 		23
-            dd 		gdt     			;存放GDT的物理/线性地址
+pgdt	dw 		23
+	dw 		512 + gdt , 0x9    			;存放GDT的物理/线性地址, 要加上段基址
 
-gdt 		dq 	0x0000000000000000
-			dq	0x00cf98000000ffff
-			dq 	0x00cf92000000ffff   			;存放临时gdt,共三个
+gdt 	dq 	0x0000000000000000
+	dq	0x00cf98000000ffff
+	dq 	0x00cf92000000ffff   			;存放临时gdt,共三个
 
-pidt 		dw 	0
-			dd 	0, 0
+pidt 	dw 	0
+	dd 	0, 0
                           
 bin_hex     db '0123456789ABCDEF'		;put_hex_dword子过程用的查找表 
 
