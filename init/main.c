@@ -74,7 +74,7 @@ void main(void)
 	// blk_dev_init();
 	// chr_dev_init();
 	// tty_init();
-	time_init();
+	// time_init();
 	printk("%s\n", "now we are in the main function");
 	// sched_init();
 	// buffer_init(buffer_memory_end);

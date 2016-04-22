@@ -2,7 +2,7 @@ AR = ar
 
 OBJS = console.o
 CC	= gcc
-CFLAGS = -nostdinc -I../../include
+CFLAGS = -nostdinc -I../../include -m32
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

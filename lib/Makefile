@@ -11,7 +11,7 @@ OBJS = ctype.o errno.o string.o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.o: %.asm
-	nasm -f elf -o $@ $<
+	nasm -f elf32 -o $@ $<
 
 
 lib.a: $(OBJS)

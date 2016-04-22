@@ -33,8 +33,12 @@ tools/writeimg: tools/writeimg.c boot/bootSect boot/setup
 boot/head.o: boot/head.asm
 	nasm -f elf32 boot/head.asm -o boot/head.o
 
-tools/systemtest: boot/head.o init/testmain.o kernel/sched.o
-	ld  $(LDFLAGS) boot/head.o init/testmain.o kernel/sched.o -o tools/systemtest > System.map
+tools/systemtest: boot/head.o init/testmain.o $(ARCHIVES) $(DRIVERS) $(LIBS)
+	ld  $(LDFLAGS) boot/head.o init/testmain.o  \
+		$(ARCHIVES) \
+		$(DRIVERS) \
+		$(LIBS) \
+		-o tools/systemtest > System.map
 
 tools/system: boot/head.o init/main.o $(DRIVERS) $(ARCHIVES) $(LIBS)
 	ld $(LDFLAGS) boot/head.o init/main.o \
@@ -55,7 +59,7 @@ boot/head: boot/head.asm
 	nasm -f bin boot/head.asm
 
 kernel/kernel.o:
-	cd kernel; make
+	(cd kernel; make)
 
 
 kernel/chr_drv/chr_drv.a:

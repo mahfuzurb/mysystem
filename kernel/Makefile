@@ -3,7 +3,7 @@ LDFLAGS	=-s -x
 CC	= gcc
 LD = ld
 
-CFLAGS = -std=gnu99 -nostdinc -I../include  -fno-builtin 
+CFLAGS = -std=gnu99 -nostdinc -I../include  -fno-builtin -m32
 
 OBJS  = sched.o mktime.o sys.o traps.o sys_call.o asm.o segment.o printk.o vsprintf.o
 
@@ -11,11 +11,11 @@ OBJS  = sched.o mktime.o sys.o traps.o sys_call.o asm.o segment.o printk.o vspri
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.o: %.asm
-	nasm -f elf -o $@ $<
+	nasm -f elf32 -o $@ $<
 
 	
 kernel.o: $(OBJS)
-	$(LD) -r -o kernel.o $(OBJS)
+	$(LD) -m elf_i386 -r -o kernel.o $(OBJS)
 	sync
 
 
@@ -24,7 +24,9 @@ clean:
 	(cd chr_drv; make clean)
 
 
-sched.o: ../include/linux/sys.h
+sched.o: ../include/linux/sys.h ../include/linux/sched.h 
+
+printk.o: printk.c ../include/stdarg.h ../include/stddef.h  ../include/linux/kernel.h 
 
 mktime.o: mktime.c ../include/time.h
 

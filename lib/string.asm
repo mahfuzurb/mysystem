@@ -3,423 +3,423 @@
 ;  rdi,	rsi, rdx, rcx
 section	.text
 ;-----------------------------------------------------------------------------------------------
-global 	strcpy
+; global 	strcpy
 
-strcpy:
+; strcpy:
 
-	cld
+; 	cld
 
-	push 	rbp
-	mov 	rbp, 	rsp
+; 	push 	rbp
+; 	mov 	rbp, 	rsp
 
-	sub 	rsp, 	8 * 4	; 	reserve 32B space 
+; 	sub 	rsp, 	8 * 4	; 	reserve 32B space 
 
-	push	rdi 			;	store the pointer
+; 	push	rdi 			;	store the pointer
 
-.1:
-	lodsb
-	stosb
+; .1:
+; 	lodsb
+; 	stosb
 
-	test 	al, 	al
-	jne 	.1
+; 	test 	al, 	al
+; 	jne 	.1
 
-	pop 	rax				; 	get the pointer
+; 	pop 	rax				; 	get the pointer
 
-	leave
-	ret
-
-;-----------------------------------------------------------------------------------------------
-global 	strncpy
-
-strncpy:
-
-	cld
-
-	push 	rbp
-	mov 	rbp, 	rsp
-
-	sub 	rsp, 	8 * 4	; 	reserve 32B space 
-
-	mov 	rcx, 	rdx 	; 	3rd argument
-
-	push	rdi 			;	store the pointer
-
-.1:
-	dec 	rcx 
-	js 		.2
-	lodsb
-	stosb
-
-	test 	al, 	al
-	jne 	.1
-
-	rep
-	stosb
-
-.2:
-	pop 	rax				; 	get the pointer
-
-	leave
-	ret
+; 	leave
+; 	ret
 
 ;-----------------------------------------------------------------------------------------------
-global strcat
+; global 	strncpy
 
-strcat:
+; strncpy:
 
-	push 	rbp
-	mov 	rbp, 	rsp
+; 	cld
 
-	cld
+; 	push 	rbp
+; 	mov 	rbp, 	rsp
 
-	; push	rcx
+; 	sub 	rsp, 	8 * 4	; 	reserve 32B space 
 
-	mov 	al, 	0
-	mov 	rcx, 	0xffffffffffffffff
+; 	mov 	rcx, 	rdx 	; 	3rd argument
 
-	repnz
-	scasb
+; 	push	rdi 			;	store the pointer
 
-	dec		rdi
-.1:
-	lodsb
-	stosb
+; .1:
+; 	dec 	rcx 
+; 	js 		.2
+; 	lodsb
+; 	stosb
 
-	test	al, 	al
+; 	test 	al, 	al
+; 	jne 	.1
 
-	jne		.1
+; 	rep
+; 	stosb
 
-	mov 	rax, 	rdi
+; .2:
+; 	pop 	rax				; 	get the pointer
 
-	; pop 	rcx 
+; 	leave
+; 	ret
 
-	leave
-	ret
+;-----------------------------------------------------------------------------------------------
+; global strcat
+
+; strcat:
+
+; 	push 	rbp
+; 	mov 	rbp, 	rsp
+
+; 	cld
+
+; 	; push	rcx
+
+; 	mov 	al, 	0
+; 	mov 	rcx, 	0xffffffffffffffff
+
+; 	repnz
+; 	scasb
+
+; 	dec		rdi
+; .1:
+; 	lodsb
+; 	stosb
+
+; 	test	al, 	al
+
+; 	jne		.1
+
+; 	mov 	rax, 	rdi
+
+; 	; pop 	rcx 
+
+; 	leave
+; 	ret
 
 ;-----------------------------------------------------------------------------------------------
 
-global strncat
+; global strncat
 
-strncat:
+; strncat:
 
-	push 	rbp
-	mov 	rbp, 	rsp
+; 	push 	rbp
+; 	mov 	rbp, 	rsp
 
-	; push	rcx
+; 	; push	rcx
 
-	cld
+; 	cld
 
-	mov 	al, 	0
-	mov 	rcx, 	0xffffffffffffffff
+; 	mov 	al, 	0
+; 	mov 	rcx, 	0xffffffffffffffff
 
-	repnz
-	scasb
+; 	repnz
+; 	scasb
 
-	dec		rdi
+; 	dec		rdi
 
-	mov 	rcx, 	rdx  ;3rd argument
-.1:
-	lodsb
-	stosb
+; 	mov 	rcx, 	rdx  ;3rd argument
+; .1:
+; 	lodsb
+; 	stosb
 
-	test	al, 	al
+; 	test	al, 	al
 
-	je		.2
+; 	je		.2
 
-	loop 	.1
+; 	loop 	.1
 
-.2:
-	mov 	rax, 	rdi
+; .2:
+; 	mov 	rax, 	rdi
 
-	; pop 	rcx 
+; 	; pop 	rcx 
 
-	leave
-	ret
+; 	leave
+; 	ret
 
 ; ;-----------------------------------------------------------------------------------------------
-global 	strcmp
+; global 	strcmp
 
-strcmp:
+; strcmp:
 
-	cld
-	push 	rbp
-	mov 	rbp, 	rsp
+; 	cld
+; 	push 	rbp
+; 	mov 	rbp, 	rsp
 
-.1:
-	lodsb					;	es:esi -->  al
-	scasb
+; .1:
+; 	lodsb					;	es:esi -->  al
+; 	scasb
 
-	jne 	.2				;	if( al - [es:rdi])
+; 	jne 	.2				;	if( al - [es:rdi])
 
-	test 	al, 	al 
-	jne 	.1
+; 	test 	al, 	al 
+; 	jne 	.1
 
-	xor 	rax, 	rax 	;  return 0
-	jmp 	.3
+; 	xor 	rax, 	rax 	;  return 0
+; 	jmp 	.3
 
-.2:
-	mov 	rax, 	1 		; 	return 1
-	jl		.3
-	neg 	rax 			; 	return -1
+; .2:
+; 	mov 	rax, 	1 		; 	return 1
+; 	jl		.3
+; 	neg 	rax 			; 	return -1
 
-.3:
-	leave
-	ret
-
-;-----------------------------------------------------------------------------------------------
-global 	strncmp
-
-strncmp:
-
-	cld
-	push 	rbp
-	mov 	rbp, 	rsp
-
-	mov 	rcx, 	rdx
-
-.1:
-	dec 	rcx
-	js 		.4
-	lodsb					;	es:esi -->  al
-	scasb
-
-	jne 	.2				;	if( al - [es:rdi])
-
-	test 	al, 	al 
-	jne 	.1
-.4:
-	xor 	rax, 	rax 	;  return 0
-	jmp 	.3
-
-.2:
-	mov 	rax, 	1 		; 	return 1
-	jl		.3
-	neg 	rax 			; 	return -1
-
-
-.3:
-	leave
-	ret
+; .3:
+; 	leave
+; 	ret
 
 ;-----------------------------------------------------------------------------------------------
-global 	strchr 
+; global 	strncmp
 
-strchr:
+; strncmp:
 
-	cld
+; 	cld
+; 	push 	rbp
+; 	mov 	rbp, 	rsp
 
-	push 	rbp
-	mov 	rbp, 	rsp
+; 	mov 	rcx, 	rdx
 
-	mov 	rax, 	rsi 
-	xor 	ah, 	ah
-	mov 	ah, 	al 		;	char --> ah
+; .1:
+; 	dec 	rcx
+; 	js 		.4
+; 	lodsb					;	es:esi -->  al
+; 	scasb
 
-	mov 	rsi, 	rdi 
-.1:
-	lodsb
+; 	jne 	.2				;	if( al - [es:rdi])
 
-	cmp 	ah, 	al 		
-	je 		.2
-	test 	al, 	al
-	jne		.1
+; 	test 	al, 	al 
+; 	jne 	.1
+; .4:
+; 	xor 	rax, 	rax 	;  return 0
+; 	jmp 	.3
 
-	mov 	rsi, 	1 		;  return rsi - 1 = NULL(0)
+; .2:
+; 	mov 	rax, 	1 		; 	return 1
+; 	jl		.3
+; 	neg 	rax 			; 	return -1
 
-.2:
-	dec 	rsi 
 
-	mov 	rax, 	rsi
-.3:
-	leave
-	ret
+; .3:
+; 	leave
+; 	ret
+
+;-----------------------------------------------------------------------------------------------
+; global 	strchr 
+
+; strchr:
+
+; 	cld
+
+; 	push 	rbp
+; 	mov 	rbp, 	rsp
+
+; 	mov 	rax, 	rsi 
+; 	xor 	ah, 	ah
+; 	mov 	ah, 	al 		;	char --> ah
+
+; 	mov 	rsi, 	rdi 
+; .1:
+; 	lodsb
+
+; 	cmp 	ah, 	al 		
+; 	je 		.2
+; 	test 	al, 	al
+; 	jne		.1
+
+; 	mov 	rsi, 	1 		;  return rsi - 1 = NULL(0)
+
+; .2:
+; 	dec 	rsi 
+
+; 	mov 	rax, 	rsi
+; .3:
+; 	leave
+; 	ret
 
 
 
 ;-----------------------------------------------------------------------------------------------
-global 	strrchr 
+; global 	strrchr 
 
-strrchr:
+; strrchr:
 
-	cld
+; 	cld
 
-	push 	rbp
-	mov 	rbp, 	rsp
+; 	push 	rbp
+; 	mov 	rbp, 	rsp
 
-	mov 	rax, 	rsi 
-	xor 	ah, 	ah
-	mov 	ah, 	al 		;	char --> ah
+; 	mov 	rax, 	rsi 
+; 	xor 	ah, 	ah
+; 	mov 	ah, 	al 		;	char --> ah
 
-	mov 	rsi, 	rdi 	; 	rsi = string address
-	xor 	rdx, 	rdx 	; 	rdx = 0
-.1:
-	lodsb
+; 	mov 	rsi, 	rdi 	; 	rsi = string address
+; 	xor 	rdx, 	rdx 	; 	rdx = 0
+; .1:
+; 	lodsb
 
-	cmp 	ah, 	al 		
-	jne		.2
-	mov 	rdx, 	rsi
-	dec 	rdx 			; 	rdx = rsi - 1
-.2:
-	test 	al, 	al
-	jne		.1
+; 	cmp 	ah, 	al 		
+; 	jne		.2
+; 	mov 	rdx, 	rsi
+; 	dec 	rdx 			; 	rdx = rsi - 1
+; .2:
+; 	test 	al, 	al
+; 	jne		.1
 
-	mov 	rax, 	rdx 
+; 	mov 	rax, 	rdx 
 
-	leave
-	ret
+; 	leave
+; 	ret
 
 ;-----------------------------------------------------------------------------------------------
-global 	strcspn
+; global 	strcspn
 
-strcspn:
+; strcspn:
 
-	cld
+; 	cld
 
-	push 	rbp
-	mov 	rbp, 		rsp
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
 
-	sub 	rsp,			4 * 8	
+; 	sub 	rsp,			4 * 8	
 
-	xchg 	rdi, 			rsi 					; rsi(1st arg), rdi(2nd arg)
-	mov 	[rsp], 		rsi 
-	mov 	[rsp + 8], 	rdi 
+; 	xchg 	rdi, 			rsi 					; rsi(1st arg), rdi(2nd arg)
+; 	mov 	[rsp], 		rsi 
+; 	mov 	[rsp + 8], 	rdi 
 
-	mov 	al, 			0
-	mov 	rcx, 		0xffffffffffffffff
-	repne 	
-	scasb
-	dec 	rdi 
-	mov 	rdx, 		rdi
-	sub 	rdx, 		[rsp + 8]
-	mov 	[rsp + 16], 	rdx 	; the length of 2nd arg
+; 	mov 	al, 			0
+; 	mov 	rcx, 		0xffffffffffffffff
+; 	repne 	
+; 	scasb
+; 	dec 	rdi 
+; 	mov 	rdx, 		rdi
+; 	sub 	rdx, 		[rsp + 8]
+; 	mov 	[rsp + 16], 	rdx 	; the length of 2nd arg
 
-.1:
-	mov 	rdi, 			[rsp + 8]
-	lodsb
+; .1:
+; 	mov 	rdi, 			[rsp + 8]
+; 	lodsb
 
-	test 	al, 			al
-	je 		.2
+; 	test 	al, 			al
+; 	je 		.2
 
-	mov 	rcx, 		[rsp + 16]
-	repne 
-	scasb 
-	jne 	.1
+; 	mov 	rcx, 		[rsp + 16]
+; 	repne 
+; 	scasb 
+; 	jne 	.1
 
-.2:
-	dec 	rsi
-	mov 	rdx, 		rsi
-	sub 	rdx, 		[rsp]
-	mov 	rax, 		rdx
+; .2:
+; 	dec 	rsi
+; 	mov 	rdx, 		rsi
+; 	sub 	rdx, 		[rsp]
+; 	mov 	rax, 		rdx
 
-	; mov 	rax, 	[rsp + 16]
+; 	; mov 	rax, 	[rsp + 16]
 	
-	leave
-	ret
+; 	leave
+; 	ret
 
 ;-----------------------------------------------------------------------------------------------
 
-global 	strpbrk
+; global 	strpbrk
 
-strpbrk:
+; strpbrk:
 
-	cld
+; 	cld
 
-	push 	rbp
-	mov 	rbp, 		rsp
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
 
-	sub 	rsp,		4 * 8		
-	xchg 	rdi, 			rsi 					; rsi(1st arg), rdi(2nd arg)
+; 	sub 	rsp,		4 * 8		
+; 	xchg 	rdi, 			rsi 					; rsi(1st arg), rdi(2nd arg)
 
-	mov 	[rsp], 		rdi
+; 	mov 	[rsp], 		rdi
 
-	xor 	al, 			al
+; 	xor 	al, 			al
 
-	mov 	rcx, 		0xffffffffffffffff
+; 	mov 	rcx, 		0xffffffffffffffff
 
-	repne
-	scasb
+; 	repne
+; 	scasb
 
-	not 	rcx
-	dec 	rcx 								;get the length of 2nd arg
-	mov 	rdx, 		rcx
+; 	not 	rcx
+; 	dec 	rcx 								;get the length of 2nd arg
+; 	mov 	rdx, 		rcx
 
 
-.1:
-	lodsb
-	test		al, 			al
-	je 		.2
+; .1:
+; 	lodsb
+; 	test		al, 			al
+; 	je 		.2
 
-	mov 	rdi, 			[rsp]
-	mov 	rcx, 		rdx
+; 	mov 	rdi, 			[rsp]
+; 	mov 	rcx, 		rdx
 
-	repne
-	scasb
-	jne 		.1
+; 	repne
+; 	scasb
+; 	jne 		.1
 
-	dec 	rsi
-	mov 	rax, 		rsi
-	jmp		.3
+; 	dec 	rsi
+; 	mov 	rax, 		rsi
+; 	jmp		.3
 
-.2:	xor 		rax, 		rax					; return NULL
+; .2:	xor 		rax, 		rax					; return NULL
 
-.3:
-	leave
-	ret
+; .3:
+; 	leave
+; 	ret
 
 
 ;-----------------------------------------------------------------------------------------------
 
-global 	strstr:
+; global 	strstr:
 
-strstr:
+; strstr:
 
-	cld
+; 	cld
 
-	push 	rbp
-	mov 	rbp, 		rsp
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
 
-	push 	rbx 							; strore the value of rbx
+; 	push 	rbx 							; strore the value of rbx
 
-	sub 	rsp,		4 * 8	
+; 	sub 	rsp,		4 * 8	
 
-	xchg 	rdi, 		rsi 					; rsi(1st arg), rdi(2nd arg)
-	mov 	[rsp], 		rdi
+; 	xchg 	rdi, 		rsi 					; rsi(1st arg), rdi(2nd arg)
+; 	mov 	[rsp], 		rdi
 
-	xor 	al, 		al
+; 	xor 	al, 		al
 
-	mov 	rcx, 		0xffffffffffffffff
+; 	mov 	rcx, 		0xffffffffffffffff
 
-	repne
-	scasb
+; 	repne
+; 	scasb
 
-	not 	rcx
-	dec 	rcx 								;get the length of 2nd arg
-	mov 	rdx, 		rcx
+; 	not 	rcx
+; 	dec 	rcx 								;get the length of 2nd arg
+; 	mov 	rdx, 		rcx
 
-.1:
-	mov 	rbx, 		rsi
-	mov 	rdi,			[rsp]
-	mov 	rcx, 		rdx
+; .1:
+; 	mov 	rbx, 		rsi
+; 	mov 	rdi,			[rsp]
+; 	mov 	rcx, 		rdx
 
-	repe 
-	cmpsb
-	je 		.2
+; 	repe 
+; 	cmpsb
+; 	je 		.2
 
-	xchg	rbx, 		rsi
-	inc 		rsi 
+; 	xchg	rbx, 		rsi
+; 	inc 		rsi 
 
-	mov 	al, 			[rbx - 1]
-	test 	al, 			al
-	jne 		.1
-	xor 	rax, 		rax
-	jmp 	.3
+; 	mov 	al, 			[rbx - 1]
+; 	test 	al, 			al
+; 	jne 		.1
+; 	xor 	rax, 		rax
+; 	jmp 	.3
 
-.2:
-	mov 	rax, 		rbx
-.3:
-	pop 	rbx
-	leave
-	ret
+; .2:
+; 	mov 	rax, 		rbx
+; .3:
+; 	pop 	rbx
+; 	leave
+; 	ret
 
 ;-----------------------------------------------------------------------------------------------
 
@@ -429,227 +429,228 @@ strlen:
 
 	cld
 
-	push 	rbp
-	mov 	rbp, 		rsp
+	push 	ebp
+	mov 	ebp, 		esp
 
+	mov 	edi, 		[ebp]
 
 	xor 	al, 			al
 
-	mov 	rcx, 		0xffffffffffffffff
+	mov 	ecx, 		0xffffffff
 
 	repne
 	scasb
 
-	not 	rcx
-	dec 	rcx 
+	not 	ecx
+	dec 	ecx 
 
-	mov 	rax, 		rcx
+	mov 	eax, 		ecx
 
 	leave
 	ret
 
 ;-----------------------------------------------------------------------------------------------
-global 	strtok, ___strtok
+; global 	strtok, ___strtok
 
-strtok:
+; strtok:
 
-	push 	rbp
-	mov 	rbp, 		rsp
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
 
-	sub 	rsp, 		4 * 8
+; 	sub 	rsp, 		4 * 8
 
-	cld
+; 	cld
 
-	mov 	[rsp], 		rdi
-	mov 	[rsp + 8], 	rsi
+; 	mov 	[rsp], 		rdi
+; 	mov 	[rsp + 8], 	rsi
 
-	test 	rdi, 		rdi 
-	je 		.3
-	;rdi != NULL
-	mov 	[___strtok],rdi
+; 	test 	rdi, 		rdi 
+; 	je 		.3
+; 	;rdi != NULL
+; 	mov 	[___strtok],rdi
 
-	;compute the length of delimeter
-	mov 	rcx, 		-1
-	mov 	rdi, 		[rsp + 8]
-	xor 	al, 		al
-	repne
-	scasb
-	not 	rcx
-	dec 	rcx
+; 	;compute the length of delimeter
+; 	mov 	rcx, 		-1
+; 	mov 	rdi, 		[rsp + 8]
+; 	xor 	al, 		al
+; 	repne
+; 	scasb
+; 	not 	rcx
+; 	dec 	rcx
 
-	; the length of delimeter == 0  ? 
-	test 	rcx, 		rcx
-	je 		.end
+; 	; the length of delimeter == 0  ? 
+; 	test 	rcx, 		rcx
+; 	je 		.end
 
-	; the length of delimeter  --->  rdx
-	mov 	rdx, 		rcx  			 
+; 	; the length of delimeter  --->  rdx
+; 	mov 	rdx, 		rcx  			 
 
-.1:
-	; search the delimeter in the source string
-	mov 	rdi, 		[rsp]
-	mov 	rsi, 		[rsp + 8]
+; .1:
+; 	; search the delimeter in the source string
+; 	mov 	rdi, 		[rsp]
+; 	mov 	rsi, 		[rsp + 8]
 
-	call	strstr
+; 	call	strstr
 
-	test 	rax, 		rax		; return value == NULL ?
-	je 		.2
+; 	test 	rax, 		rax		; return value == NULL ?
+; 	je 		.2
 
-	;subscribe the delimeter in the source string to \0
-	xor 	al, 		al
-	mov 	rdi, 		rax
-	mov 	rcx, 		rdx
-	stosb
-	jmp 	.1
-.2:
+; 	;subscribe the delimeter in the source string to \0
+; 	xor 	al, 		al
+; 	mov 	rdi, 		rax
+; 	mov 	rcx, 		rdx
+; 	stosb
+; 	jmp 	.1
+; .2:
 	
-	jmp 	.end
+; 	jmp 	.end
 
-.3:;source string == NULL
-	xor 	al, 		al
-
-
-.end
-
-	mov 	rax, 		___strtok
+; .3:;source string == NULL
+; 	xor 	al, 		al
 
 
-	leave
-	ret
+; .end
 
-___strtok	dq			0	
-;-----------------------------------------------------------------------------------------------
-global 	memcpy
-
-memcpy:
-
-	cld
-
-	push 	rbp
-	mov 	rbp, 		rsp
-
-	mov 	rcx, 		rdx
-	mov 	rax, 		rdi
-
-	rep
-	movsb 	
-
-	leave
-	ret
-
-;-----------------------------------------------------------------------------------------------
-global 	memmove
-
-memmove:
-
-	push 	rbp
-	mov 	rbp, 		rsp
-
-	sub 	rsp, 		4*8
-
-	mov 	[rsp],  	rdi
-	mov 	rcx, 		rdx
-
-	cmp 	rsi, 		rdi						; compare rsi,  rdi
-	jl 		.1 									; if rsi < rdi  jump  to table 1
-
-	cld
-
-	rep
-	movsb
-
-	jmp 	.2
-.1:
-
-	std
+; 	mov 	rax, 		___strtok
 
 
-	sub 	rdx, 		1
-	add 	rdi, 		rdx
-	add 	rsi, 		rdx
+; 	leave
+; 	ret
 
-.3:
-	lodsb
-	stosb
-	loop 	.3
+; ___strtok	dq			0	
+; ;-----------------------------------------------------------------------------------------------
+; global 	memcpy
 
-.2:
-	mov 	rax, 		[rsp]
+; memcpy:
 
-	cld						;why should this instructor must be used here?
+; 	cld
 
-	leave
-	ret
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
 
-;-----------------------------------------------------------------------------------------------
-global 	memcmp
+; 	mov 	rcx, 		rdx
+; 	mov 	rax, 		rdi
 
-memcmp:
+; 	rep
+; 	movsb 	
 
-	push 	rbp
-	mov 	rbp, 		rsp
+; 	leave
+; 	ret
 
-	cld
+; ;-----------------------------------------------------------------------------------------------
+; global 	memmove
 
-	mov 	rcx, 		rdx
-	xor 	rax,  		rax
+; memmove:
 
-	repe
-	cmpsb
-	je 		.1
-	mov 	rax, 		1
-	jl		.1
-	neg 	rax
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
 
-.1:
-	leave
-	ret
+; 	sub 	rsp, 		4*8
 
-;-----------------------------------------------------------------------------------------------
-global 	memchr
+; 	mov 	[rsp],  	rdi
+; 	mov 	rcx, 		rdx
 
-memchr:
+; 	cmp 	rsi, 		rdi						; compare rsi,  rdi
+; 	jl 		.1 									; if rsi < rdi  jump  to table 1
 
-	push 	rbp
-	mov 	rbp, 		rsp
+; 	cld
 
-	cld
+; 	rep
+; 	movsb
 
-	mov 	rax, 		rsi 	; 2nd -->> al
-	mov 	rcx, 		rdx
+; 	jmp 	.2
+; .1:
 
-	repne
-	scasb
+; 	std
 
-	je  	.1
-	mov 	rdi, 		1 		; return rdi - 1 = NULL
 
-.1:
-	dec 	rdi
+; 	sub 	rdx, 		1
+; 	add 	rdi, 		rdx
+; 	add 	rsi, 		rdx
 
-	mov 	rax, 		rdi
+; .3:
+; 	lodsb
+; 	stosb
+; 	loop 	.3
 
-	leave
-	ret
+; .2:
+; 	mov 	rax, 		[rsp]
 
-;-----------------------------------------------------------------------------------------------
-global 	memset
+; 	cld						;why should this instructor must be used here?
 
-memset:
+; 	leave
+; 	ret
 
-	push 	rbp
-	mov 	rbp, 		rsp
+; ;-----------------------------------------------------------------------------------------------
+; global 	memcmp
 
-	cld
+; memcmp:
 
-	mov 	rcx,		rdx
-	mov 	rax, 		rsi 
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
 
-	mov 	rdx, 		rdi
+; 	cld
 
-	rep
-	stosb
+; 	mov 	rcx, 		rdx
+; 	xor 	rax,  		rax
 
-	mov 	rax, 		rdx
+; 	repe
+; 	cmpsb
+; 	je 		.1
+; 	mov 	rax, 		1
+; 	jl		.1
+; 	neg 	rax
 
-	leave
-	ret
+; .1:
+; 	leave
+; 	ret
+
+; ;-----------------------------------------------------------------------------------------------
+; global 	memchr
+
+; memchr:
+
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
+
+; 	cld
+
+; 	mov 	rax, 		rsi 	; 2nd -->> al
+; 	mov 	rcx, 		rdx
+
+; 	repne
+; 	scasb
+
+; 	je  	.1
+; 	mov 	rdi, 		1 		; return rdi - 1 = NULL
+
+; .1:
+; 	dec 	rdi
+
+; 	mov 	rax, 		rdi
+
+; 	leave
+; 	ret
+
+; ;-----------------------------------------------------------------------------------------------
+; global 	memset
+
+; memset:
+
+; 	push 	rbp
+; 	mov 	rbp, 		rsp
+
+; 	cld
+
+; 	mov 	rcx,		rdx
+; 	mov 	rax, 		rsi 
+
+; 	mov 	rdx, 		rdi
+
+; 	rep
+; 	stosb
+
+; 	mov 	rax, 		rdx
+
+; 	leave
+; 	ret
