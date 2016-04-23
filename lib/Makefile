@@ -19,7 +19,7 @@ lib.a: $(OBJS)
 	sync
 
 clean:
-	rm *.o
+	-rm *.o *.a
 
 string.o: string.asm 
 ctype.o: ../include/ctype.h

@@ -3,7 +3,7 @@ LDFLAGS	=-s -x
 CC	= gcc
 LD = ld
 
-CFLAGS = -std=gnu99 -nostdinc -I../include  -fno-builtin -m32
+CFLAGS = -std=gnu99 -nostdinc -I../include  -fno-builtin -m32  -fno-stack-protector
 
 OBJS  = sched.o mktime.o sys.o traps.o sys_call.o asm.o segment.o printk.o vsprintf.o
 

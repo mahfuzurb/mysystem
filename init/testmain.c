@@ -24,6 +24,7 @@ static char * envp_rc[] = { "HOME=/", NULL ,NULL };
 static char * argv[] = { "-/bin/sh",NULL };
 static char * envp[] = { "HOME=/usr/root", NULL, NULL };
 
+extern void console_print(const char *);
 
 int main(int argc, char const *argv[])
 {
@@ -34,7 +35,8 @@ int main(int argc, char const *argv[])
 
 	main_memory_start = buffer_memory_end;
 
-	printk("%s\n", "now we are in the main function");
+	// printk("%s\n", "now we are in the main function");
+	console_print("now we are in the main function");
 
 	return 0;
 }

@@ -5,7 +5,11 @@ TEXT_OFF = 0x101000
 LDFLAGS	= -m elf_i386 -s -x -M -T tools/system.lds
 # LDFLAGS	= –Ttext 0x0 –e main
 # LDFLAGS = –Ttext 0x0
-CFLAGS = -nostdinc -Iinclude -m32
+
+# -nostdinc 不在标准系统目录中搜索头文件,只在-I指定的目录中搜索
+# -fno-builtin 不包含c标准库，使用自己编写的标准库
+# -fno-stack-protector  防止出现错误   “ 对‘__stack_chk_fail’未定义的引用 ”
+CFLAGS = -nostdinc -Iinclude -m32 -fno-builtin -fno-stack-protector
 CC = gcc
 
 DRIVERS = kernel/chr_drv/chr_drv.a
@@ -69,9 +73,10 @@ lib/lib.a:
 	(cd lib; make)
 
 clean:
-	-rm a.img System.map tools/system tools/writeimg boot/bootSect boot/setup
+	-rm a.img System.map tools/system tools/systemtest tools/writeimg boot/bootSect boot/setup
 	-rm init/*.o boot/*.o 
 	(cd kernel;make clean)
+	(cd lib;make clean)
 	
 
 
