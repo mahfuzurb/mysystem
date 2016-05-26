@@ -73,7 +73,7 @@ void main(void)
 	// trap_init();
 	// blk_dev_init();
 	// chr_dev_init();
-	// tty_init();
+	tty_init();
 	// time_init();
 	printk("%s\n", "now we are in the main function");
 	// sched_init();

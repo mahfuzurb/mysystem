@@ -22,8 +22,8 @@ LIBS	=lib/lib.a
 
 all: a.img
 
-a.img: boot/bootSect boot/setup tools/systemtest tools/writeimg
-	objcopy -R .note -R .comment -S -O binary tools/systemtest tools/system
+a.img: boot/bootSect boot/setup tools/system tools/writeimg
+	objcopy -R .note -R .comment -S -O binary tools/system tools/system
 	tools/writeimg
 	sync
 
